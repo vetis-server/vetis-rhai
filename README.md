@@ -1,5 +1,7 @@
 # vetis-rhai
 
+[![Crates.io downloads](https://img.shields.io/crates/d/vetis-rhai)](https://crates.io/crates/vetis-rhai) [![crates.io](https://img.shields.io/crates/v/vetis-rhai?style=flat-square)](https://crates.io/crates/vetis-rhai) [![Build Status](https://github.com/vetis-server/vetis-rhai/actions/workflows/rust.yml/badge.svg?event=push)](https://github.com/vetis-server/vetis-rhai/actions/workflows/rust.yml) ![Crates.io MSRV](https://img.shields.io/crates/msrv/vetis-rhai) [![Documentation](https://docs.rs/vetis-rhai/badge.svg)](https://docs.rs/vetis-rhai/latest/vetis-rhai) [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/vetis-server/vetis-rhai/blob/main/LICENSE.md)  [![codecov](https://codecov.io/gh/vetis-server/vetis-rhai/graph/badge.svg?token=T0HSBAPVSI)](https://codecov.io/gh/vetis-server/vetis-rhai)
+
 vetis-rhai added rhai scripting support to vetis server.
 
 ## Features
