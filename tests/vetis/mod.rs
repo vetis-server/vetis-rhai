@@ -55,7 +55,7 @@ mod tokio {
                         .start()
                         .await?;
 
-                    let cert = tokio::fs::read(format! {"../{CA_CERT}"}).await?;
+                    let cert = tokio::fs::read(CA_CERT).await?;
                     let client = deboa_tokio::Client::builder()
                         .certificate(DeboaCertificate::from_slice(&cert, ContentEncoding::DER))
                         .build();
