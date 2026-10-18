@@ -18,23 +18,19 @@ runtime-tokio = ["dep:vetis-tokio", "dep:tokio"]
 
 [dependencies]
 bytes = "1.12.1"
-duration-str = "0.21.0"
 http = "1.5.0"
-hyper-body-utils = "0.1.18"
 log = "0.4.34"
-regex = "1.12.4"
 rhai = { version = "1.26.1", features = ["sync"] }
 serde = { version = "1.0.228", features = ["derive"] }
-time = "0.3.55"
 tokio = { version = "1.53.1", optional = true }
 typetag = "0.2.21"
-vetis = { version = "0.1.7-beta.5" }
-vetis-tokio = { version = "0.1.2-beta.6", optional = true }
+vetis = { version = "0.1.7-beta.6" }
+vetis-tokio = { version = "0.1.2-beta.8", optional = true }
 
 [dev-dependencies]
 caramelo = "0.1.5"
-deboa = { version = "0.1.5-beta.3" }
-deboa-tokio = { version = "0.1.4-beta.3", default-features = false, features = [
+deboa = { version = "0.1.5-beta.7" }
+deboa-tokio = { version = "0.1.4-beta.8", default-features = false, features = [
     "http2",
     "rust-tls",
     "default-rustls-provider",
