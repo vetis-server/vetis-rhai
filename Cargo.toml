@@ -19,7 +19,6 @@ runtime-tokio = ["dep:vetis-tokio", "dep:tokio"]
 [dependencies]
 bytes = "1.12.1"
 http = "1.5.0"
-log = "0.4.34"
 rhai = { version = "1.26.1", features = ["sync"] }
 serde = { version = "1.0.228", features = ["derive"] }
 tokio = { version = "1.53.1", optional = true }

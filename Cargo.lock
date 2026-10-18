@@ -2247,7 +2247,6 @@ dependencies = [
  "deboa",
  "deboa-tokio",
  "http",
- "log",
  "rhai",
  "serde",
  "serde_yaml_ng",
