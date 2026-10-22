@@ -19,9 +19,9 @@ runtime-tokio = ["dep:vetis-tokio", "dep:tokio"]
 [dependencies]
 bytes = "1.12.1"
 http = "1.5.0"
-rhai = { version = "1.26.1", features = ["sync"] }
+rhai = { version = "1.27.0", features = ["sync", "compact_str"] }
 serde = { version = "1.0.228", features = ["derive"] }
-tokio = { version = "1.53.1", optional = true }
+tokio = { version = "1.54.1", optional = true }
 typetag = "0.2.21"
 vetis = { version = "0.1.7-beta.6" }
 vetis-tokio = { version = "0.1.2-beta.8", optional = true }
