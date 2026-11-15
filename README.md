@@ -31,9 +31,9 @@ Choose the appropriate runtime feature for your project:
 Configure static file serving using the builder pattern:
 
 ```rust,ignore
-use vetis_rhai::RhaiPathConfig;
+use vetis_rhai::RhaiHookConfig;
 
-let config = RhaiPathConfig::builder()
+let config = RhaiHookConfig::builder()
     .uri("/script")
     .script_path("index.rhai")
     .build()?;
