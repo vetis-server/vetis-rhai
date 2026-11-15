@@ -20,7 +20,7 @@ server:
         cert_file: "certs/server.der"
         key_file: "certs/server.key.der"
         supported_alpns:
-          - "H2"
+          - "h2"
       hooks:
-        - type: "rhai"
+        - name: "rhai"
           script: "files/index.rhai"

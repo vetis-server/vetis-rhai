@@ -1,13 +1,9 @@
 #![doc = include_str!("../README.md")]
 #![deny(missing_docs)]
 #[cfg(feature = "runtime-tokio")]
-use crate::tokio::RhaiPath;
+use crate::tokio::RhaiHook;
 use serde::{Deserialize, Serialize};
-use vetis::{
-    VetisResult,
-    errors::{ConfigError, VetisError},
-    host::path::{Path, PathConfig},
-};
+use vetis::{VetisHook, VetisResult, matcher::MatcherConfig};
 
 /// Request module
 pub(crate) mod request;
@@ -21,20 +17,23 @@ mod tests;
 /// Tokio runtime support module
 pub mod tokio;
 
-/// Builder for creating `RhaiPathConfig` instances.
-pub struct RhaiPathConfigBuilder {
-    uri: String,
+/// Builder for creating `RhaiHookConfig` instances.
+pub struct HookConfigBuilder {
+    matcher: Option<Box<dyn MatcherConfig>>,
     script: String,
 }
 
-impl RhaiPathConfigBuilder {
-    /// Allow set the URI of static path.
+impl HookConfigBuilder {
+    /// Allow set a matcher
     ///
     /// # Returns
     ///
     /// * `Self` - The builder.
-    pub fn uri(mut self, uri: &str) -> Self {
-        self.uri = uri.to_string();
+    pub fn add_matcher<M>(mut self, matcher: M) -> Self
+    where
+        M: MatcherConfig + Send + Sync + 'static,
+    {
+        self.matcher = Some(Box::new(matcher));
         self
     }
 
@@ -48,17 +47,18 @@ impl RhaiPathConfigBuilder {
         self
     }
 
-    /// Build the `StaticPathConfig` with the configured settings.
+    /// Build the `StaticHookConfig` with the configured settings.
     ///
     /// # Returns
     ///
-    /// * `VetisResult<FlashConfig>` - The `StaticPathConfig` with the configured settings.
-    pub fn build(self) -> VetisResult<RhaiPathConfig> {
-        if self.uri.is_empty() {
-            return Err(VetisError::Config(ConfigError::Path("URI cannot be empty".to_string())));
-        }
-
-        Ok(RhaiPathConfig { uri: self.uri, script: self.script })
+    /// * `VetisResult<FlashConfig>` - The `StaticHookConfig` with the configured settings.
+    pub fn build(self) -> VetisResult<HookConfig> {
+        Ok(HookConfig {
+            matcher: self
+                .matcher
+                .map_or(None, |val| Some(val)),
+            script: self.script,
+        })
     }
 }
 
@@ -66,47 +66,35 @@ impl RhaiPathConfigBuilder {
 
 /// Configuration for static file serving.
 #[derive(Clone, Serialize, Deserialize)]
-pub struct RhaiPathConfig {
-    uri: String,
+pub struct HookConfig {
+    matcher: Option<Box<dyn MatcherConfig>>,
     script: String,
 }
 
 #[typetag::serde(name = "rhai")]
-impl PathConfig for RhaiPathConfig {
-    fn uri(&mut self, uri: &str) {
-        self.uri = uri.to_string();
+impl vetis::hook::HookConfig for HookConfig {
+    fn matcher(&self) -> Option<&Box<dyn MatcherConfig>> {
+        self.matcher
+            .as_ref()
     }
 
-    fn boxed_clone(&self) -> Box<dyn PathConfig> {
+    fn boxed_clone(&self) -> Box<dyn vetis::hook::HookConfig> {
         Box::new(self.clone())
     }
 
-    fn boxed_path(&self) -> Box<dyn Path> {
-        Box::new(RhaiPath::new(self.clone()))
-    }
-
-    fn boxed_sync(&self) -> Box<dyn Path + Send + Sync> {
-        Box::new(RhaiPath::new(self.clone()))
+    fn boxed_hook(&self) -> Box<dyn VetisHook> {
+        Box::new(RhaiHook::new(self.clone()))
     }
 }
 
-impl RhaiPathConfig {
-    /// Allow create a new `RhaiPathConfigBuilder` with default settings.
+impl HookConfig {
+    /// Allow create a new `RhaiHookConfigBuilder` with default settings.
     ///
     /// # Returns
     ///
-    /// * `StaticPathConfigBuilder` - The builder.
-    pub fn builder() -> RhaiPathConfigBuilder {
-        RhaiPathConfigBuilder { uri: "/".to_string(), script: "index.rhai".into() }
-    }
-
-    /// Returns uri
-    ///
-    /// # Returns
-    ///
-    /// * `&str` - The uri.
-    pub fn uri(&self) -> &str {
-        &self.uri
+    /// * `StaticHookConfigBuilder` - The builder.
+    pub fn builder() -> HookConfigBuilder {
+        HookConfigBuilder { matcher: None, script: "index.rhai".into() }
     }
 
     /// Returns script
