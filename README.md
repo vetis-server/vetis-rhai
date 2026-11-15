@@ -32,9 +32,14 @@ Configure static file serving using the builder pattern:
 
 ```rust,ignore
 use vetis_rhai::RhaiHookConfig;
+use vetis_matchers::request::{PathMatcher, PathMatcherConfig};
 
 let config = RhaiHookConfig::builder()
-    .uri("/script")
+    .matcher(PathMatcher::new(
+        PathMatcherConfig::builder()
+            .add_path("/script*")
+            .build()?,
+    ))
     .script_path("index.rhai")
     .build()?;
 ```
@@ -42,8 +47,11 @@ let config = RhaiHookConfig::builder()
 ### vetis.yaml
 
 ```yaml
-type: rhai_path
-uri: /hello
+type: rhai
+matcher:
+  type: "path"
+  paths:
+    - "/scripts*"
 script_path: index.rhai
 ```
 
@@ -51,6 +59,7 @@ script_path: index.rhai
 
 #### rhai_path
 
+- **matcher**: If set, this hook will be only called if request meet the criteria defined by him, otherwise, all requests will call this hook (optional)
 - **script_path**: The path for rhai script file
 
 ## License
