@@ -1,1 +1,1 @@
-pub(crate) const CA_CERT: &str = "certs/ca.der";
+pub(crate) const CA_CERT: &str = "files/certs/ca.der";
