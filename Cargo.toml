@@ -20,7 +20,7 @@ default = ["runtime-tokio"]
 runtime-tokio = ["dep:vetis-tokio", "dep:tokio"]
 
 [dependencies]
-bytes = "1.12.1"
+bytes = "1.12.2"
 cel = "0.16.0"
 compact_str = { version = "0.10.0", features = ["serde", "smallvec"] }
 http = "1.5.0"
