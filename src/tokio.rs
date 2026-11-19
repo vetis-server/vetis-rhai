@@ -16,10 +16,9 @@ use std::{
 };
 use tokio::sync::RwLock;
 use vetis::{
-    HookPhases, Request, Response, VetisFutureResult,
+    Request, Response, VetisFutureResult,
     errors::VetisError,
-    hook::{Hook, HookConfig as _, HookPhase},
-    make_bitflags,
+    hook::{Hook, HookConfig as _, HookPhase, HookPhases},
     matcher::Matcher,
 };
 
@@ -76,7 +75,7 @@ impl Hook for RhaiHook {
     }
 
     fn phases(&self) -> HookPhases {
-        make_bitflags!(HookPhase::Access)
+        HookPhases::new(HookPhase::Access)
     }
 
     fn matcher_mut(&mut self) -> Option<&mut Box<dyn Matcher>> {
