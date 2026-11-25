@@ -29,7 +29,7 @@ impl HookConfigBuilder {
     /// # Returns
     ///
     /// * `Self` - The builder.
-    pub fn add_matcher<M>(mut self, matcher: M) -> Self
+    pub fn matcher<M>(mut self, matcher: M) -> Self
     where
         M: MatcherConfig + Send + Sync + 'static,
     {
@@ -61,8 +61,6 @@ impl HookConfigBuilder {
         })
     }
 }
-
-/// TODO: Add link getter
 
 /// Configuration for static file serving.
 #[derive(Clone, Serialize, Deserialize)]

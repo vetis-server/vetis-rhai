@@ -18,7 +18,7 @@ use tokio::sync::RwLock;
 use vetis::{
     Request, Response, VetisFutureResult,
     errors::VetisError,
-    hook::{Hook, HookConfig as _, HookPhase, HookPhases},
+    hook::{Hook, HookConfig as _, HookPhase},
     matcher::Matcher,
 };
 
@@ -29,7 +29,7 @@ static SCRIPT_CACHE: LazyLock<RwLock<HashMap<PathBuf, Arc<AST>>>> =
 pub struct RhaiHook {
     matcher: Option<Box<dyn Matcher>>,
     config: HookConfig,
-    engine: Arc<Engine>,
+    engine: Option<Arc<Engine>>,
 }
 
 unsafe impl Send for RhaiHook {}
@@ -46,36 +46,47 @@ impl RhaiHook {
     ///
     /// * `StaticHook` - The static path
     pub fn new(config: HookConfig) -> RhaiHook {
-        let mut engine = Engine::new();
-        engine
-            .register_type_with_name::<response::Response>("RhaiResponse")
-            .register_fn("new_response", response::Response::new)
-            .register_fn("add_header", response::add_header)
-            .register_fn("write", response::write)
-            .register_get("headers", response::Response::get_headers)
-            .register_get_set(
-                "status_code",
-                response::Response::get_status_code,
-                response::Response::set_status_code,
-            );
-
-        let matcher = if let Some(matcher_config) = config.matcher() {
-            Some(matcher_config.boxed_matcher())
-        } else {
-            None
-        };
-
-        RhaiHook { matcher, config, engine: engine.into() }
+        RhaiHook { matcher: None, config, engine: None }
     }
 }
 
 impl Hook for RhaiHook {
+    fn setup<'a>(&'a mut self) -> VetisFutureResult<'a, ()> {
+        Box::pin(async move {
+            let mut engine = Engine::new();
+            engine
+                .register_type_with_name::<response::Response>("RhaiResponse")
+                .register_fn("new_response", response::Response::new)
+                .register_fn("add_header", response::add_header)
+                .register_fn("write", response::write)
+                .register_get("headers", response::Response::get_headers)
+                .register_get_set(
+                    "status_code",
+                    response::Response::get_status_code,
+                    response::Response::set_status_code,
+                );
+
+            let matcher = if let Some(matcher_config) = self
+                .config
+                .matcher()
+            {
+                Some(matcher_config.boxed_matcher())
+            } else {
+                None
+            };
+
+            self.engine = Some(Arc::new(engine));
+            self.matcher = matcher;
+            Ok(())
+        })
+    }
+
     fn has_matches(&self, context: &Context) -> bool {
         if let Some(matcher) = &self.matcher { matcher.is_match(context) } else { true }
     }
 
-    fn phases(&self) -> HookPhases {
-        HookPhases::new(HookPhase::Access)
+    fn phase(&self) -> HookPhase {
+        HookPhase::Content
     }
 
     fn matcher_mut(&mut self) -> Option<&mut Box<dyn Matcher>> {
@@ -124,13 +135,16 @@ impl Hook for RhaiHook {
 
             let script_request = Arc::new(script_request);
 
+            let Some(engine) = &self.engine else {
+                return Err(VetisError::hook("Engine has not been initialized!"));
+            };
+
             let ast = if !SCRIPT_CACHE
                 .read()
                 .await
                 .contains_key(&script_path)
             {
-                let ast = self
-                    .engine
+                let ast = engine
                     .compile_file(
                         script_path
                             .clone()
@@ -138,7 +152,7 @@ impl Hook for RhaiHook {
                     )
                     .map_err(|e| {
                         //info!("Error: {}", e.to_string());
-                        VetisError::worker(format_compact!(
+                        VetisError::hook(format_compact!(
                             "Couldt not compile script: {}",
                             e.to_string()
                         ))
@@ -162,7 +176,7 @@ impl Hook for RhaiHook {
                     .clone()
             };
 
-            let engine = self.engine.clone();
+            let engine = engine.clone();
             let ast = ast.clone();
 
             let result = tokio::spawn(async move {
